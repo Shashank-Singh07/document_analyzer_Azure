@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocIntel Studio — Azure Document Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Background mesh -->
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-brand">
+      <div class="brand-icon" aria-hidden="true">⬡</div>
+      <div class="brand-text">
+        <div class="brand-name">DocIntel <span class="accent">Studio</span></div>
+        <div class="brand-sub">AZURE DOCUMENT INTELLIGENCE</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="status-tag" id="statusTag">IDLE</span>
+      <button class="btn-reset hidden" id="btnReset">RESET</button>
+    </div>
+  </header>
+
+  <!-- ══ MAIN LAYOUT ═════════════════════════════════════════════════════════ -->
+  <main class="main-layout" id="mainLayout">
+
+    <!-- ── Config Panel ──────────────────────────────────────────────────── -->
+    <aside class="config-panel" id="configPanel">
+      <div class="section-label">
+        <span class="glow-dot"></span>
+        CONFIGURATION
+      </div>
+
+      <!-- Endpoint -->
+      <div class="field-group">
+        <div class="field-label">
+          <span class="label-text">Azure Endpoint</span>
+          <span class="tag">required</span>
+        </div>
+        <div class="input-wrap" id="wrapEndpoint">
+          <span class="input-icon">🔗</span>
+          <input
+            type="text"
+            id="inputEndpoint"
+            class="field-input"
+            placeholder="https://YOUR_RESOURCE.cognitiveservices.azure.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="field-group">
+        <div class="field-label">
+          <span class="label-text">API Key</span>
+          <span class="tag tag-amber">secret</span>
+        </div>
+        <div class="input-wrap" id="wrapApiKey">
+          <span class="input-icon">🔑</span>
+          <input
+            type="password"
+            id="inputApiKey"
+            class="field-input"
+            placeholder="32-character key"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Document URL -->
+      <div class="field-group">
+        <div class="field-label">
+          <span class="label-text">Document URL</span>
+          <span class="tag">required</span>
+        </div>
+        <div class="input-wrap" id="wrapDocUrl">
+          <span class="input-icon">📄</span>
+          <input
+            type="text"
+            id="inputDocUrl"
+            class="field-input"
+            value="https://amzirlodp-prd-s3.s3.amazonaws.com/documents/images/big_4cda85d892a5c0b5dd63b510a9c83e9c9d06e739.jpg"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+      </div>
+
+      <!-- Model selector -->
+      <div class="field-group">
+        <div class="field-label">
+          <span class="label-text">Model</span>
+          <span class="tag">prebuilt</span>
+        </div>
+        <div class="select-wrap">
+          <select id="selectModel" class="field-select">
+            <option value="prebuilt-layout">Layout (General)</option>
+            <option value="prebuilt-invoice">Invoice</option>
+            <option value="prebuilt-receipt">Receipt</option>
+            <option value="prebuilt-idDocument">ID Document</option>
+            <option value="prebuilt-businessCard">Business Card</option>
+            <option value="prebuilt-read">Read (OCR)</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <!-- Analyze button -->
+      <button class="btn-analyze" id="btnAnalyze">
+        <span class="btn-icon">⬡</span>
+        <span class="btn-label">ANALYZE DOCUMENT</span>
+        <span class="spinner hidden" id="spinner"></span>
+      </button>
+
+      <!-- Terminal log -->
+      <div class="terminal hidden" id="terminal">
+        <div class="terminal-body" id="terminalBody"></div>
+      </div>
+
+      <!-- Warning -->
+      <div class="warning-box">
+        ⚠ API key is sent directly from the browser. Use a backend proxy for production deployments.
+      </div>
+    </aside>
+
+    <!-- ── Results Panel ──────────────────────────────────────────────────── -->
+    <section class="results-panel hidden" id="resultsPanel">
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-label">PAGES</div>
+          <div class="stat-value cyan" id="statPages">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TABLES</div>
+          <div class="stat-value amber" id="statTables">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">KV PAIRS</div>
+          <div class="stat-value green" id="statKV">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">WORDS</div>
+          <div class="stat-value" id="statWords">0</div>
+        </div>
+      </div>
+
+      <!-- Confidence bar -->
+      <div class="confidence-box hidden" id="confidenceBox">
+        <div class="conf-label-row">
+          <span class="conf-label">EXTRACTION CONFIDENCE</span>
+          <span class="conf-pct" id="confPct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" data-tab="text" role="tab">📝 Text</button>
+        <button class="tab-btn" data-tab="tables" role="tab">📊 Tables</button>
+        <button class="tab-btn" data-tab="kv" role="tab">🔑 Key-Values</button>
+        <button class="tab-btn" data-tab="raw" role="tab">{ } Raw JSON</button>
+      </div>
+
+      <!-- Tab panels -->
+      <div class="tab-content" id="tabContent">
+
+        <!-- Text tab -->
+        <div class="tab-pane active" id="paneText">
+          <div id="textPages"></div>
+        </div>
+
+        <!-- Tables tab -->
+        <div class="tab-pane hidden" id="paneTables">
+          <div id="tablesContainer"></div>
+        </div>
+
+        <!-- KV tab -->
+        <div class="tab-pane hidden" id="paneKV">
+          <div id="kvContainer"></div>
+        </div>
+
+        <!-- Raw JSON tab -->
+        <div class="tab-pane hidden" id="paneRaw">
+          <div class="raw-toolbar">
+            <button class="btn-copy" id="btnCopyJson">COPY JSON</button>
+          </div>
+          <pre class="raw-json" id="rawJson"></pre>
+        </div>
+
+      </div>
+
+      <!-- Toggle config -->
+      <div class="toggle-config-wrap">
+        <button class="btn-toggle-config" id="btnToggleConfig">▼ SHOW CONFIG</button>
+      </div>
+
+    </section>
+
+    <!-- ── Empty State ────────────────────────────────────────────────────── -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-title">Ready to Analyze</div>
+      <div class="empty-desc">
+        Configure your Azure endpoint and API key,<br />paste a document URL, and hit Analyze.
+      </div>
+      <div class="format-tags">
+        <span class="tag tag-muted">PDF</span>
+        <span class="tag tag-muted">JPEG</span>
+        <span class="tag tag-muted">PNG</span>
+        <span class="tag tag-muted">TIFF</span>
+        <span class="tag tag-muted">BMP</span>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
