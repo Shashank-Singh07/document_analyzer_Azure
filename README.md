@@ -138,7 +138,8 @@ This ensures compatibility across different Azure resources.
 
 ## 📸 UI Preview
 
-_Add screenshots here_
+<img width="1919" height="812" alt="image" src="https://github.com/user-attachments/assets/2d5d8891-9dac-42ac-809a-8eb4cc7cc276" />
+
 
 ---
 
